@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode
 @NoArgsConstructor
+@Builder
 public class Company {
 
     private Long id;
