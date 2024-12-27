@@ -1,0 +1,8 @@
+docker exec -it msg-broker bash
+kafka-topics --bootstrap-server msg-broker:9092 --create --topic test --partitions 5 --replication-factor 1
+
+docker exec -it msg-broker bash
+kafka-console-consumer --bootstrap-server msg-broker:9092 --topic test --from-beginning
+
+docker exec -it msg-broker bash
+kafka-console-producer --bootstrap-server msg-broker:9092 --topic test

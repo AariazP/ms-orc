@@ -1,23 +1,26 @@
 server:
   port: 0
-  servlet:
-    context-path: /report-ms
 spring:
   application:
-    name: report-ms
+    name: report-listener
   profiles:
     default: default
-  config:
-    import: "optional:configserver:http://localhost:7777/"
   cloud:
     stream:
       kafka:
         binder:
           brokers: localhost:9092
       function:
-        bindings:
-          consumerReport-out-0:
+        bindings: #Consumer-out -> consumerReport <- Consumer-in
+          consumerReport-in-0:
             destination: consumerReport
+  data:
+    mongodb:
+      authentication-database: admin
+      host: localhost
+      port: 27017
+      username: root
+      password: root
 eureka:
   instance:
     instance-id: "${spring.application.name}:${random.value}"

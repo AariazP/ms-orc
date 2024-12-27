@@ -9,6 +9,7 @@ import org.arias.reports.models.Company;
 import org.arias.reports.models.WebSite;
 import org.arias.reports.repositories.CompaniesRepositoriesFallback;
 import org.arias.reports.repositories.CompaniesRepository;
+import org.arias.reports.streams.ReportPublisher;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ public class IReportService implements ReportService {
     private final ReportHelper reportHelper;
     private final CompaniesRepositoriesFallback companiesRepoFallback;
     private final Resilience4JCircuitBreakerFactory circuitBreakerFactory;
+    private final ReportPublisher reportPublisher;
 
     @Override
     public String makeReport(String name) {
@@ -57,6 +59,7 @@ public class IReportService implements ReportService {
                 .build();
 
         this.companiesRepository.postByName(company);
+        this.reportPublisher.publishReport(nameReport);
         return "Report saved";
     }
 
