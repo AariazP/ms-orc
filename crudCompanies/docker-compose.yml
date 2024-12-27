@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+
+  db:
+    image: postgres:16.1
+    container_name: db-companies-develop
+    restart: always
+    volumes:
+      - ../s-1/sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+      - ../s-1/sql/data.sql:/docker-entrypoint-initdb.d/data.sql
+    environment:
+      POSTGRES_DB: 'companies'
+      POSTGRES_USER: 'develop'
+      POSTGRES_PASSWORD: 'develop'
+    ports:
+      - '5432:5432'
+    networks:
+      - companies_network
+  
+  #db2:
+    #image: postgres:16.1
+    #container_name: db-companies-prod
+    #restart: always
+    #volumes:
+      #  - ../s-1/sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+      #- ../s-1/sql/data.sql:/docker-entrypoint-initdb.d/data.sql
+    #environment:
+      # POSTGRES_DB: 'companies'
+      #POSTGRES_USER: 'production'
+      #POSTGRES_PASSWORD: 'production'
+    #ports:
+      #  - '5433:5432'
+    #networks:
+      # - companies_network
+
+  #db3:
+    #  image: postgres:16.1
+    #  container_name: db-companies-qa
+    # restart: always
+    # volumes:
+      #  - ../s-1/sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+      #- ../s-1/sql/data.sql:/docker-entrypoint-initdb.d/data.sql
+    #environment:
+      # POSTGRES_DB: 'companies'
+      # POSTGRES_USER: 'qa-branch'
+      #POSTGRES_PASSWORD: 'qa-branch'
+    #ports:
+      #  - '5434:5432'
+    #networks:
+      # - companies_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-companies
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'admin@admin.com'
+      PGADMIN_DEFAULT_PASSWORD: 'admin'
+    ports:
+      - '9876:80'
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - companies_network
+
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.3
+    container_name: load-balancer
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - companies_network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.3
+    container_name: msg-broker
+    restart: always
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    networks:
+      - companies_network
+        
+  mongo:
+    image: mongo
+    restart: always
+    hostname: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: reports
+    ports:
+      - "27017:27017"
+    volumes:
+        - mongodb_data:/data/db
+    networks:
+      - companies_network
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_URL: "mongodb://root:root@mongo:27017"
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+    networks:
+      - companies_network
+
+volumes:
+  pgadmin_data:
+  mongodb_data:
+
+networks:
+  companies_network:
+    driver: bridge
