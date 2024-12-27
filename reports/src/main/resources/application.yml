@@ -2,7 +2,6 @@ server:
   port: 0
   servlet:
     context-path: /report-ms
-
 spring:
   application:
     name: report-ms
@@ -10,7 +9,6 @@ spring:
     default: default
   config:
     import: "optional:configserver:http://localhost:7777/"
-
 eureka:
   instance:
     instance-id: "${spring.application.name}:${random.value}"

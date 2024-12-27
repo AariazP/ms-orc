@@ -15,7 +15,6 @@ import java.util.Map;
 public class ReportsController {
 
     private final ReportService reportService;
-    private final ReportHelper reportHelper;
 
     @GetMapping("/reports/{name}")
     public ResponseEntity<Map<String,String>> getReport(@PathVariable String name) {
