@@ -32,11 +32,9 @@ public class IAuthService implements AuthService {
     }
 
     @Override
-    public TokenDTO validateToken(String tokenDTO) {
-       if(jwtHelper.validateToken(tokenDTO)) {
-           return new TokenDTO(tokenDTO);
-       }
-         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, MESSAGE);
+    public TokenDTO validateToken(String accessToken) {
+       if(jwtHelper.validateToken(accessToken)) return new TokenDTO(accessToken);
+       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, MESSAGE);
     }
 
     private boolean validateUser(UserDTO userDTO, User user) {

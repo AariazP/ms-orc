@@ -20,7 +20,7 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<TokenDTO> validateToken(@RequestHeader String tokenDTO) {
-        return ResponseEntity.ok(authService.validateToken(tokenDTO));
+    public ResponseEntity<TokenDTO> validateToken(@RequestHeader String accessToken) {
+        return ResponseEntity.ok(authService.validateToken(accessToken));
     }
 }
