@@ -1,0 +1,14 @@
+schema.sql
+--------------
+create table user_info
+(
+    id bigint auto_increment,
+    username varchar(255) not null,
+    password varchar(255) not null,
+    primary key(id)
+);
+
+data.sql
+--------------
+INSERT INTO user_info (username, password)
+    VALUES ('default', '$2a$10$H6zpX00a3pZ3Yprw7Aj7jOSwkwPNdI0TLf2hndxWtt8p5FsIi.qzG');
