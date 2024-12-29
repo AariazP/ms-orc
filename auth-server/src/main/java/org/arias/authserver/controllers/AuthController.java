@@ -5,10 +5,7 @@ import org.arias.authserver.dto.TokenDTO;
 import org.arias.authserver.dto.UserDTO;
 import org.arias.authserver.services.AuthService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -23,7 +20,7 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<TokenDTO> validateToken(@RequestBody TokenDTO tokenDTO) {
+    public ResponseEntity<TokenDTO> validateToken(@RequestHeader String tokenDTO) {
         return ResponseEntity.ok(authService.validateToken(tokenDTO));
     }
 }
