@@ -1,5 +1,7 @@
 package org.arias.reports.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.EurekaClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ public class IReportService implements ReportService {
     private final CompaniesRepositoriesFallback companiesRepoFallback;
     private final Resilience4JCircuitBreakerFactory circuitBreakerFactory;
     private final ReportPublisher reportPublisher;
+    private final ObjectMapper objectMapper;
 
     @Override
     public String makeReport(String name) {
@@ -40,8 +43,26 @@ public class IReportService implements ReportService {
 
         List<String> data = this.reportHelper.getPlacedholders(nameReport);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        var company = this.buildCompany(data, formatter);
+        this.reportPublisher.publishReport(nameReport);
+        circuitBreakerFactory.create("circuitebreaker-event-company")
+                .run(
+                        () -> this.companiesRepository.postByName(company),
+                        throwable -> this.reportPublisher.saveReport(this.getJSONFromCompany(company)));
 
-        Company company = Company.builder()
+        return "Report saved";
+    }
+
+    private String getJSONFromCompany(Company company){
+        try {
+            return objectMapper.writeValueAsString(company);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Company buildCompany(List<String> data, DateTimeFormatter formatter) {
+        return Company.builder()
                 .name(data.get(0).replaceAll("[{}]", ""))
                 .logo(data.get(0).replaceAll("[{}]", "") + ".png")
                 .foundationDate(LocalDate.parse(data.get(1).replaceAll("[{}]", ""), formatter))
@@ -57,10 +78,6 @@ public class IReportService implements ReportService {
 
                 )
                 .build();
-
-        this.companiesRepository.postByName(company);
-        this.reportPublisher.publishReport(nameReport);
-        return "Report saved";
     }
 
     @Override

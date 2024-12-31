@@ -35,7 +35,7 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
     implementation('org.springframework.cloud:spring-cloud-starter-bootstrap')
     implementation 'org.springframework.cloud:spring-cloud-starter-config:4.2.0'
-
+    implementation 'org.springframework.cloud:spring-cloud-starter-stream-kafka'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 

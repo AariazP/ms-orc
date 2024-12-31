@@ -65,24 +65,33 @@ services:
       - pgadmin_data:/var/lib/pgadmin
     networks:
       - companies_network
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.3
+    container_name: zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - companies_network
 
   kafka:
     image: confluentinc/cp-kafka:7.4.3
     container_name: msg-broker
     restart: always
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://msg-broker:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     ports:
       - "9092:9092"
+    depends_on:
+      - zookeeper
     networks:
       - companies_network
-        
   mongo:
     image: mongo
     restart: always
@@ -146,6 +155,7 @@ services:
       - config
     environment:
       EUREKA_SERVER: http://registry:8761/eureka
+      KAFKA_SERVER: http://msg-broker:9092
       CONFIG_SERVER: http://config:7777
     networks:
         - companies_network
@@ -191,10 +201,13 @@ services:
       KAFKA_SERVER: http://msg-broker:9092
     networks:
       - companies_network
+
   report-listener:
     image: report-listener
     restart: always
     container_name: report-listener
+    ports:
+      - 8087:8087
     environment:
       EUREKA_SERVER: http://registry:8761/eureka
       KAFKA_SERVER: http://msg-broker:9092 
