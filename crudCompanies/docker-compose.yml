@@ -213,7 +213,7 @@ services:
     ports:
       - 4040:4040
     environment:
-      AUTH_SERVER: "http://auth/auth-server/auth/validate"
+      AUTH_SERVER: http://auth:3030/auth-server/auth/validate
       EUREKA_SERVER: http://registry:8761/eureka
     networks:
         - companies_network
