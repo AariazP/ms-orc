@@ -16,7 +16,7 @@ public class AuthFilter implements GatewayFilter {
 
     private final WebClient webClient;
     @Value("${AUTH_SERVER}")
-    private static String AUTH_SERVICE_URI;
+    private String AUTH_SERVICE_URI;
     private static final String AUTH_HEADER = "accessToken";
 
     public AuthFilter() {
