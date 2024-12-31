@@ -8,12 +8,12 @@ spring:
   profiles:
     default: default
   config:
-    import: "optional:configserver:http://localhost:7777/"
+    import: "optional:configserver:${CONFIG_SERVER}"
   cloud:
     stream:
       kafka:
         binder:
-          brokers: localhost:9092
+          brokers: ${KAFKA_SERVER}
       function:
         bindings:
           consumerReport-out-0:
@@ -23,4 +23,4 @@ eureka:
     instance-id: "${spring.application.name}:${random.value}"
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVER}

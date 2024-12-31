@@ -9,21 +9,21 @@ spring:
     stream:
       kafka:
         binder:
-          brokers: localhost:9092
+          brokers: ${KAFKA_SERVER}
       function:
         bindings: #Consumer-out -> consumerReport <- Consumer-in
           consumerReport-in-0:
             destination: consumerReport
   data:
     mongodb:
-      authentication-database: admin
-      host: localhost
-      port: 27017
-      username: root
-      password: root
+      authentication-database: ${MONGO_AUTH_DB}
+      host: ${MONGO_HOST}
+      port: ${MONGO_PORT}
+      username: ${MONGO_USER}
+      password: ${MONGO_PASS}
 eureka:
   instance:
     instance-id: "${spring.application.name}:${random.value}"
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVER}

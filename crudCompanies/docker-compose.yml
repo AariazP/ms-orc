@@ -4,7 +4,7 @@ services:
 
   db:
     image: postgres:16.1
-    container_name: db-companies-develop
+    container_name: db
     restart: always
     volumes:
       - ../s-1/sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
@@ -113,6 +113,110 @@ services:
     networks:
       - companies_network
 
+  registry:
+    image: server-registry
+    restart: always
+    container_name: registry
+    ports:
+      - 8761:8761
+    networks:
+        - companies_network
+
+  config:
+    image: server-config 
+    restart: always
+    container_name: config
+    ports:
+      - 7777:7777
+    depends_on:
+      - registry
+    environment:
+      REPO_URL: https://github.com/AariazP/microservice-config.git
+      EUREKA_SERVER: http://registry:8761/eureka/
+    networks:
+      - companies_network
+
+  companies-crud:
+    image: companies-crud
+    container_name: companies-crud
+    restart: always
+    depends_on:
+      - db
+      - registry
+      - config
+    environment:
+      EUREKA_SERVER: http://registry:8761/eureka
+      CONFIG_SERVER: http://config:7777
+    networks:
+        - companies_network
+  auth:
+    image: auth-server
+    restart: always
+    container_name: auth
+    ports:
+      - 3030:3030
+    depends_on:
+      - config
+    environment:
+      CONFIG_SERVER: http://config:7777
+      EUREKA_SERVER: http://registry:8761/eureka
+      DB_NAME: usersdb
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    networks:
+        - companies_network
+
+  companies-fall:
+    image: crud-companies-fallback
+    restart: always
+    container_name: companies-crud-fall
+    depends_on:
+      - registry
+      - companies-crud
+    environment:
+      EUREKA_SERVER: http://registry:8761/eureka
+    networks:
+        - companies_network
+  
+  reports:
+    image: reports-server
+    restart: always
+    container_name: reports
+    depends_on:
+      - registry
+      - config
+    environment:
+      EUREKA_SERVER: http://registry:8761/eureka
+      CONFIG_SERVER: http://config:7777
+      KAFKA_SERVER: http://msg-broker:9092
+    networks:
+      - companies_network
+  report-listener:
+    image: report-listener
+    restart: always
+    container_name: report-listener
+    environment:
+      EUREKA_SERVER: http://registry:8761/eureka
+      KAFKA_SERVER: http://msg-broker:9092 
+      MONGO_AUTH_DB: admin
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
+      MONGO_USER: root
+      MONGO_PASS: root
+    networks:
+        - companies_network
+        
+  gateway:
+    image: gateway
+    restart: always
+    container_name: gateway
+    ports:
+      - 4040:4040
+    environment:
+      AUTH_SERVER: "http://auth/auth-server/auth/validate"
+      EUREKA_SERVER: http://registry:8761/eureka
+    networks:
+        - companies_network
 volumes:
   pgadmin_data:
   mongodb_data:

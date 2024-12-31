@@ -1,6 +1,7 @@
 package org.arias.gateway.filters;
 
 import org.arias.gateway.dto.TokenDTO;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,8 @@ import org.springframework.http.HttpHeaders;
 public class AuthFilter implements GatewayFilter {
 
     private final WebClient webClient;
-    private static final String AUTH_SERVICE_URI = "http://localhost:3030/auth-server/auth/validate";
+    @Value("${AUTH_SERVER}")
+    private static String AUTH_SERVICE_URI;
     private static final String AUTH_HEADER = "accessToken";
 
     public AuthFilter() {
